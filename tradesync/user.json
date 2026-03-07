@@ -1,0 +1,8 @@
+{
+  "terminal_path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+  "login": 101790512,
+  "password": "K*5hQIAf",
+  "server": "MetaQuotes-Demo",
+  "jwt_token": "",
+  "api_endpoint": "my_server_ip/trade/import/mt"
+}

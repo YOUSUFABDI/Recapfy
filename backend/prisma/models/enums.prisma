@@ -1,0 +1,27 @@
+enum Role {
+    USER
+    ADMIN
+}
+
+enum Platform {
+    CTRADER
+    MT4
+    MT5
+}
+
+enum SubscriptionStatus {
+    ACTIVE
+    CANCELED
+    EXPIRED
+    PAST_DUE
+}
+
+enum PaymentStatus {
+    PENDING
+    FINISHED
+    FAILED
+}
+
+enum PaymentGateway {
+    STRIPE
+}

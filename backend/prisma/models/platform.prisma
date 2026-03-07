@@ -1,0 +1,59 @@
+model PlatformConnection {
+    id           String   @id @default(uuid())
+    userId       String
+    platform     Platform @default(CTRADER)
+    label        String?
+    // Spotware OpenAPI OAuth tokens
+    accessToken  String
+    refreshToken String
+    expiresAt    DateTime
+
+    // Spotware identity (used to dedupe per user)
+    spotwareUserId   String? // nullable until fetched
+    spotwareUsername String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // 1. Deleting User deletes Connection
+    user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+    accounts PlatformAccount[]
+
+    @@unique([userId, spotwareUserId])
+    @@index([userId])
+}
+
+model PlatformAccount {
+    id                   String    @id @default(uuid())
+    userId               String
+    connectionId         String
+    platformAccountId    BigInt
+    restTradingAccountId BigInt?
+    isLive               Boolean
+    brokerName           String?
+    traderLogin          String?
+    connectedAt          DateTime  @default(now())
+    lastSyncAt           DateTime?
+
+    depositCurrency    String?
+    balance            Float?
+    equity             Float?
+    instrumentCategory String? @default("Multi")
+    positionMode       String?
+
+    // 2. Deleting User deletes Account
+    user       User               @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_platformconnection_user")
+    // 3. Deleting Connection deletes Account (Optional but recommended for consistency)
+    connection PlatformConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+    trades    Trade[]
+    aiReports PlatformAiReport[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([connectionId, platformAccountId])
+    @@index([userId, isLive])
+    @@index([connectionId])
+    @@index([traderLogin])
+}

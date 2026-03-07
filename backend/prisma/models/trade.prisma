@@ -1,0 +1,124 @@
+model Trade {
+    id                String  @id @default(uuid())
+    userId            String
+    platformAccountId String?
+
+    // high-level
+    platform String
+    status   String @default("")
+
+    // symbol/name
+    symbol   String
+    symbolId Int?
+
+    // direction & qty/prices & times
+    direction    String
+    quantity     Float?
+    quantityLots Float?
+    entryTime    DateTime?
+    exitTime     DateTime?
+    entryPrice   Float?
+    exitPrice    Float?
+    result       Float?
+
+    // Duration
+    durationMs    BigInt?
+    durationLabel String?
+
+    // identifiers
+    ticketId   String
+    positionId String?
+    orderId    String?
+
+    // raw cTrader-ish fields
+    dealStatus               Int?
+    tradeSide                Int?
+    createTimestampMs        BigInt?
+    executionTimestampMs     BigInt?
+    utcLastUpdateTimestampMs BigInt?
+    executionPrice           Float?
+    marginRate               Float?
+    commission               Float?
+    baseToUsdRate            Float?
+    moneyDigits              Int?
+    comment                  String?
+
+    // closePositionDetail (normalized)
+    cpd_entryPrice         Float?
+    cpd_grossProfit        Float?
+    cpd_swap               Float?
+    cpd_commission         Float?
+    cpd_balance            Float?
+    cpd_quoteToDepositRate Float?
+    cpd_closedVolume       Float?
+    cpd_balanceVersion     Int?
+    cpd_pnlConversionFee   Float?
+
+    // position fields
+    positionStatus          Int?
+    positionSwap            Float?
+    positionPrice           Float?
+    stopLoss                Decimal? @db.Decimal(18, 10)
+    takeProfit              Decimal? @db.Decimal(18, 10)
+    positionUtcLastUpdateMs BigInt?
+    positionCommission      Float?
+    positionMarginRate      Float?
+    mirroringCommission     Float?
+    guaranteedStopLoss      Boolean?
+    usedMargin              Float?
+    stopLossTriggerMethod   Int?
+    positionMoneyDigits     Int?
+    trailingStopLoss        Boolean?
+
+    // tradeData columnization for open positions
+    td_symbolId         Int?
+    td_volume           Float?
+    td_tradeSide        Int?
+    td_openTimestampMs  BigInt?
+    td_comment          String?
+    td_measurementUnits String?
+
+    quoteToDepositRate Float?
+
+    rawDeal     Json?
+    rawPosition Json?
+
+    notes     String?
+    tags      Json     @default("[]")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // 4. Deleting User deletes Trade
+    user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+    // 5. Deleting Account deletes Trade
+    account PlatformAccount? @relation(fields: [platformAccountId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, ticketId])
+    @@index([userId, positionId, exitTime])
+    @@index([userId, platform, status, symbol, entryTime])
+    @@index([positionId])
+    @@index([symbolId])
+}
+
+model PlatformAiReport {
+    id                      String @id @default(uuid())
+    userId                  String
+    platformAccountId       String
+    identifier              String
+    autoUpdateFrequencyDays Int    @default(7)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    strengths                 Json @default("[]")
+    areasForImprovement       Json @default("[]")
+    actionableRecommendations Json @default("[]")
+
+    // 6. Deleting User deletes Report
+    user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+    // 7. Deleting Account deletes Report
+    account PlatformAccount @relation(fields: [platformAccountId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, platformAccountId, identifier])
+    @@index([userId, platformAccountId, identifier])
+}

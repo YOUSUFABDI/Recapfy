@@ -1,0 +1,33 @@
+model User {
+    id        String   @id @default(uuid())
+    email     String   @unique
+    password  String?
+    googleId  String?  @unique
+    name      String?
+    avatarUrl String?  @default("https://recapfy-store.s3.us-east-1.amazonaws.com/profile_pic.jpg")
+    role      Role     @default(USER)
+    hasAccess Boolean  @default(false)
+    status    Boolean  @default(false)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    trades              Trade[]
+    platformConnections PlatformConnection[]
+    PlatformAccount     PlatformAccount[]
+    aiReports           PlatformAiReport[]
+    subscriptions       Subscription[]
+    payments            Payment[]
+    otps                OTP[]
+}
+
+model OTP {
+    id        String   @id @default(uuid())
+    otp       Int
+    userId    String
+    status    String   @db.VarChar(255)
+    createdAt DateTime @default(now())
+    expiresAt DateTime
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId], map: "OTP_userId_fkey")
+}
