@@ -1,98 +1,21 @@
-# name: Deploy to EC2 (NestJS)
+name: Deploy to EC2
 
-# on:
-#   push:
-#     branches: ['main']
-#   workflow_dispatch:
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-#     env:
-#       APP_NAME: lock-my-trades-api
-#       REMOTE_PATH: /var/www/lock-my-trades-api
-#       NODE_VERSION: '20'
-
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-
-#       - name: Use Node ${{ env.NODE_VERSION }}
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: ${{ env.NODE_VERSION }}
-#           cache: 'npm'
-
-#       - name: Install deps & run tests (CI)
-#         run: |
-#           npm install
-#           npm test -- --passWithNoTests
-
-#       - name: Add SSH key & known_hosts
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-#           chmod 600 ~/.ssh/id_rsa
-#           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
-
-#       - name: Ensure target directory exists and is owned by EC2 user
-#         run: |
-#           ssh "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
-#             "sudo mkdir -p ${REMOTE_PATH} && sudo chown -R ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} ${REMOTE_PATH}"
-
-#       - name: Rsync repo to server (respects optional .deployignore)
-#         run: |
-#           RSYNC_EXCLUDES=""
-#           if [ -f .deployignore ]; then
-#             RSYNC_EXCLUDES="--exclude-from=.deployignore"
-#           fi
-#           rsync -az --delete $RSYNC_EXCLUDES ./ "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${REMOTE_PATH}/"
-
-#       - name: Remote install, build, migrate, and (re)start with PM2
-#         run: |
-#           ssh "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" '
-#             set -e
-#             cd '"${REMOTE_PATH}"'
-
-#             # Ensure Node.js 20 + PM2
-#             if ! command -v node >/dev/null 2>&1; then
-#               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-#               sudo apt -y install nodejs
-#             fi
-#             if ! command -v pm2 >/dev/null 2>&1; then
-#               sudo npm i -g pm2
-#               pm2 startup systemd -u $USER --hp $HOME || true
-#             fi
-
-#             mkdir -p logs
-
-#             # Ensure DATABASE_URL in .env (from GitHub secret)
-#             touch .env
-#             if grep -q "^DATABASE_URL=" .env; then
-#               sed -i "s#^DATABASE_URL=.*#DATABASE_URL='"${{ secrets.DATABASE_URL }}"'#g" .env
-#             else
-#               printf "\nDATABASE_URL='"${{ secrets.DATABASE_URL }}"'\n" >> .env
-#             fi
-
-#             # Install deps (with devDeps for build), build, prisma generate + migrate
-#             npm install
-#             npm run build
-#             npx prisma generate
-#             npx prisma migrate deploy
-
-#             # Prune devDeps for runtime
-#             npm prune --omit=dev
-
-#             # Start or restart with PM2
-#             if pm2 describe '"${APP_NAME}"' >/dev/null 2>&1; then
-#               pm2 restart '"${APP_NAME}"'
-#             else
-#               pm2 start dist/main.js \
-#                 --name '"${APP_NAME}"' \
-#                 --cwd '"${REMOTE_PATH}"' \
-#                 --time
-#             fi
-
-#             pm2 save
-#           '
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/Recapfy/backend
+            ./deploy.sh
