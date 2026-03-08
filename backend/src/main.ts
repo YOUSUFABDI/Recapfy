@@ -13,6 +13,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', 1);
+
   // Apply JSON/body parsers for normal routes and capture raw body into req.rawBody
   app.use(
     bodyParser.json({
