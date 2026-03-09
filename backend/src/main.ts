@@ -16,20 +16,9 @@ async function bootstrap() {
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.set('trust proxy', 1);
 
-  // Apply JSON/body parsers for normal routes and capture raw body into req.rawBody
-  // app.use(
-  //   bodyParser.json({
-  //     verify: (req: any, _res, buf) => {
-  //       // Store rawBody string for Nest controllers that expect it (controller webhook).
-  //       // Note: the raw express route registered in BillingController uses bodyParser.raw itself.
-  //       req.rawBody = buf && buf.length ? buf.toString() : '';
-  //     },
-  //   }),
-  // );
   app.use(
     bodyParser.json({
       verify: (req: any, _res, buf) => {
-        // DO NOT use .toString() here. Stripe needs the raw Buffer.
         req.rawBody = buf;
       },
     }),
