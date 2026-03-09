@@ -45,25 +45,32 @@ async function bootstrap() {
 
   // app.enableCors({
   //   origin: (origin, callback) => {
-  //     // Allow requests with no origin (like mobile apps or curl)
-  //     // or if the origin is in our allowed list
-  //     if (!origin || allowedOrigins.includes(origin)) {
+  //     // 1. Allow if there is no origin (Stripe webhooks/Server-to-server)
+  //     // 2. Allow if the origin is in our list
+  //     if (!origin || allowedOrigins.some((o) => origin.startsWith(o))) {
   //       callback(null, true);
   //     } else {
+  //       // Log the rejected origin so we can see what it was
+  //       console.log('❌ CORS Rejected Origin:', origin);
   //       callback(new Error('Not allowed by CORS'));
   //     }
   //   },
   //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   //   credentials: true,
   // });
+
   app.enableCors({
     origin: (origin, callback) => {
-      // 1. Allow if there is no origin (Stripe webhooks/Server-to-server)
-      // 2. Allow if the origin is in our list
-      if (!origin || allowedOrigins.some((o) => origin.startsWith(o))) {
+      // 1. Allow if there is no origin (Stripe webhooks / Server-to-server)
+      // 2. Allow if the origin is in our allowed list
+      // 3. Allow if it's a Vercel preview URL
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') // This covers your preview links
+      ) {
         callback(null, true);
       } else {
-        // Log the rejected origin so we can see what it was
         console.log('❌ CORS Rejected Origin:', origin);
         callback(new Error('Not allowed by CORS'));
       }
