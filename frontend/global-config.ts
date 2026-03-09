@@ -11,5 +11,5 @@ export const CONFIG: ConfigValue = {
   appName: "Recapfy",
   serverUrl: "http://localhost:3000/api",
   appVersion: packageJson.version,
-  supportEmail: "recapfyy@gmail.com",
+  supportEmail: "support@recapfy.com",
 };
