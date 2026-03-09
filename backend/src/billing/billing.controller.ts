@@ -91,7 +91,9 @@ export class BillingController {
         sig,
         process.env.STRIPE_WEBHOOK_SECRET!,
       ) as Stripe.Event;
-    } catch {
+      console.log('✅ Stripe Event Constructed:', event.type); // ADD THIS
+    } catch (err) {
+      console.error('❌ Stripe Signature Verification Failed:', err.message); // ADD THIS
       throw new BadRequestException('Invalid webhook signature');
     }
 
