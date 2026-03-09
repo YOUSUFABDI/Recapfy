@@ -10,7 +10,7 @@ import * as bodyParser from 'body-parser';
 dotenv.config();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
   const logger = new Logger('Bootstrap');
 
   const expressApp = app.getHttpAdapter().getInstance();

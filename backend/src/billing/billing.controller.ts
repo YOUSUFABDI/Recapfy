@@ -77,6 +77,8 @@ export class BillingController {
   @Post('webhook')
   @HttpCode(200)
   async stripeWebhook(@Req() req: any) {
+    console.log('--- 🛡️ STRIPE WEBHOOK HIT ---');
+    console.log('Headers:', JSON.stringify(req.headers['stripe-signature']));
     const sig = req.headers['stripe-signature'] as string;
     const raw = req.rawBody as Buffer;
     if (!raw || !sig)
