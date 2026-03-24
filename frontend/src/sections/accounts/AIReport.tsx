@@ -26,7 +26,7 @@ import { extractRtkErrorMessage } from "@/utils/error-message";
 import { useCurrentPlan } from "../settings/hooks/use-current-plan";
 import PricingModal from "@/components/PricingModal";
 
-const AI_NAME = "Cagaar";
+const AI_NAME = "Recaper";
 
 type Props = {
   identifier: string; // same value you pass to useAccountDetail
