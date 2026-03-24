@@ -42,6 +42,7 @@ async function main() {
         'Automated trading journal for unlimited accounts',
         'Deep performance analytics',
         'AI-generated performance reports',
+        'Access to all upcoming features',
       ],
       aiCoach: true,
       isActive: true,
